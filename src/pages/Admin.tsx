@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { 
   Plus, 
   Trash2, 
