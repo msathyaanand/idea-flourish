@@ -13,6 +13,8 @@ export interface Prompt {
   likes: number;
 }
 
+export type SortOption = "newest" | "oldest" | "most-liked" | "alphabetical";
+
 interface PromptContextType {
   prompts: Prompt[];
   addPrompt: (prompt: Omit<Prompt, "id" | "createdAt" | "likes">) => void;
@@ -29,6 +31,9 @@ interface PromptContextType {
   setActiveCreator: (creator: string | null) => void;
   allTags: Tag[];
   allCreators: string[];
+  totalPrompts: number;
+  sortOption: SortOption;
+  setSortOption: (option: SortOption) => void;
 }
 
 const PromptContext = createContext<PromptContextType | undefined>(undefined);
@@ -99,6 +104,7 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [activeCreator, setActiveCreator] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
 
   useEffect(() => {
     localStorage.setItem("prompts", JSON.stringify(prompts));
@@ -150,7 +156,23 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prompt.creator.toLowerCase() === activeCreator.toLowerCase();
     
     return matchesSearch && matchesTag && matchesCreator;
+  }).sort((a, b) => {
+    switch (sortOption) {
+      case "newest":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "most-liked":
+        return b.likes - a.likes;
+      case "alphabetical":
+        return a.title.localeCompare(b.title);
+      default:
+        return 0;
+    }
   });
+
+  // Total number of prompts
+  const totalPrompts = prompts.length;
 
   // Extract all unique tags and creators
   const allTags = Array.from(new Set(prompts.flatMap(prompt => prompt.tags)));
@@ -172,6 +194,9 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setActiveCreator,
     allTags,
     allCreators,
+    totalPrompts,
+    sortOption,
+    setSortOption,
   };
 
   return <PromptContext.Provider value={value}>{children}</PromptContext.Provider>;

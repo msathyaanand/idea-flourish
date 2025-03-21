@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { usePromptContext, Prompt } from "@/context/PromptContext";
 import { cn } from "@/lib/utils";
+import { getTagColor } from "@/utils/tagColors";
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -62,8 +63,8 @@ export const PromptCard = ({ prompt, onView }: PromptCardProps) => {
               {prompt.tags.map((tag) => (
                 <Badge
                   key={tag}
-                  variant="secondary"
-                  className="text-xs font-normal cursor-pointer hover:bg-secondary/80 transition-colors"
+                  variant="outline"
+                  className={`text-xs font-normal cursor-pointer transition-colors ${getTagColor(tag)}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveTag(tag);

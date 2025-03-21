@@ -7,6 +7,7 @@ import { PromptCard } from "@/components/PromptCard";
 import { PromptForm } from "@/components/PromptForm";
 import { PromptDetail } from "@/components/PromptDetail";
 import { PromptProvider, usePromptContext } from "@/context/PromptContext";
+import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 
 const PromptLibrary = () => {
   const { filteredPrompts } = usePromptContext();
@@ -74,6 +75,8 @@ const PromptLibrary = () => {
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
       />
+      
+      <OnboardingTutorial />
     </div>
   );
 };

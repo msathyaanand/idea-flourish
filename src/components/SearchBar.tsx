@@ -1,8 +1,15 @@
 
 import { useState } from "react";
-import { Search, X, Tag, User } from "lucide-react";
-import { usePromptContext } from "@/context/PromptContext";
+import { Search, X, Tag, User, SortAsc, SortDesc } from "lucide-react";
+import { usePromptContext, SortOption } from "@/context/PromptContext";
 import { Badge } from "@/components/ui/badge";
+import { getTagColor } from "@/utils/tagColors";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const SearchBar = () => {
   const { 
@@ -12,7 +19,11 @@ export const SearchBar = () => {
     activeCreator, 
     setActiveCreator,
     allTags,
-    allCreators 
+    allCreators,
+    totalPrompts,
+    filteredPrompts,
+    sortOption,
+    setSortOption
   } = usePromptContext();
   
   const [inputValue, setInputValue] = useState("");
@@ -33,8 +44,49 @@ export const SearchBar = () => {
 
   const hasActiveFilters = inputValue !== "" || activeTag !== null || activeCreator !== null;
 
+  const sortOptions: { label: string; value: SortOption }[] = [
+    { label: "Newest", value: "newest" },
+    { label: "Oldest", value: "oldest" },
+    { label: "Most Liked", value: "most-liked" },
+    { label: "Alphabetical", value: "alphabetical" },
+  ];
+
+  const getSortOptionLabel = () => {
+    return sortOptions.find(option => option.value === sortOption)?.label || "Sort by";
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto mb-8 space-y-4">
+      <div className="flex justify-between items-center mb-2">
+        <div className="text-sm text-muted-foreground">
+          Showing <span className="font-medium text-foreground">{filteredPrompts.length}</span> of <span className="font-medium text-foreground">{totalPrompts}</span> prompts
+        </div>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all">
+              {sortOption === "newest" || sortOption === "alphabetical" ? (
+                <SortDesc size={14} />
+              ) : (
+                <SortAsc size={14} />
+              )}
+              <span>{getSortOptionLabel()}</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            {sortOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                className={sortOption === option.value ? "bg-primary/10 font-medium" : ""}
+                onClick={() => setSortOption(option.value)}
+              >
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <form onSubmit={handleSearch} className="relative">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
@@ -80,8 +132,10 @@ export const SearchBar = () => {
                     <Badge
                       key={tag}
                       variant={activeTag === tag ? "default" : "outline"}
-                      className="cursor-pointer hover:bg-secondary transition-colors"
-                      onClick={() => {
+                      className={`cursor-pointer transition-colors ${
+                        activeTag !== tag ? getTagColor(tag) : ""
+                      }`}
+                      onClick={(e) => {
                         setActiveTag(activeTag === tag ? null : tag);
                         setIsTagsOpen(false);
                       }}
