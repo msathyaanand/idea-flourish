@@ -97,20 +97,26 @@ const initialPrompts: Prompt[] = [
   },
 ];
 
-// Generate a unique user ID for the current browser session
-function getUserId(): string {
-  let userId = localStorage.getItem("promptLibraryUserId");
-  if (!userId) {
-    userId = Math.random().toString(36).substring(2, 15);
-    localStorage.setItem("promptLibraryUserId", userId);
-  }
-  return userId;
-}
-
 export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [prompts, setPrompts] = useState<Prompt[]>(() => {
     const savedPrompts = localStorage.getItem("prompts");
-    return savedPrompts ? JSON.parse(savedPrompts) : initialPrompts;
+    if (savedPrompts) {
+      try {
+        // Parse the saved prompts and ensure dates are properly converted
+        const parsedPrompts = JSON.parse(savedPrompts, (key, value) => {
+          // Convert createdAt strings back to Date objects
+          if (key === 'createdAt') {
+            return new Date(value);
+          }
+          return value;
+        });
+        return parsedPrompts;
+      } catch (error) {
+        console.error("Error parsing saved prompts:", error);
+        return initialPrompts;
+      }
+    }
+    return initialPrompts;
   });
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,7 +128,7 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Save prompts and liked prompts to localStorage when they change
+  // Save prompts to localStorage when they change
   useEffect(() => {
     localStorage.setItem("prompts", JSON.stringify(prompts));
   }, [prompts]);
@@ -138,19 +144,20 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date(),
       likes: 0,
     };
-    setPrompts([newPrompt, ...prompts]);
+    const updatedPrompts = [newPrompt, ...prompts];
+    setPrompts(updatedPrompts);
   };
 
   const deletePrompt = (id: string) => {
-    setPrompts(prompts.filter((prompt) => prompt.id !== id));
+    const updatedPrompts = prompts.filter((prompt) => prompt.id !== id);
+    setPrompts(updatedPrompts);
   };
 
   const updatePrompt = (id: string, promptData: Partial<Omit<Prompt, "id" | "createdAt">>) => {
-    setPrompts(
-      prompts.map((prompt) =>
-        prompt.id === id ? { ...prompt, ...promptData } : prompt
-      )
+    const updatedPrompts = prompts.map((prompt) =>
+      prompt.id === id ? { ...prompt, ...promptData } : prompt
     );
+    setPrompts(updatedPrompts);
   };
 
   const hasLiked = (id: string) => {
