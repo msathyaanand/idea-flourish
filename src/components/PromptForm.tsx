@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,17 +13,35 @@ import { toast } from "sonner";
 interface PromptFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  editingPrompt?: Prompt;
+  editingPrompt?: Prompt | null;
 }
 
 export const PromptForm = ({ open, onOpenChange, editingPrompt }: PromptFormProps) => {
   const { addPrompt, updatePrompt } = usePromptContext();
   
-  const [title, setTitle] = useState(editingPrompt?.title || "");
-  const [description, setDescription] = useState(editingPrompt?.description || "");
-  const [creator, setCreator] = useState(editingPrompt?.creator || "");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [creator, setCreator] = useState("");
   const [tagInput, setTagInput] = useState("");
-  const [tags, setTags] = useState<string[]>(editingPrompt?.tags || []);
+  const [tags, setTags] = useState<string[]>([]);
+  
+  // Reset form or populate with editing data when modal opens/closes or editing prompt changes
+  useEffect(() => {
+    if (open) {
+      if (editingPrompt) {
+        setTitle(editingPrompt.title);
+        setDescription(editingPrompt.description);
+        setCreator(editingPrompt.creator);
+        setTags(editingPrompt.tags || []);
+      } else {
+        // Reset form for new prompt
+        setTitle("");
+        setDescription("");
+        setCreator("");
+        setTags([]);
+      }
+    }
+  }, [open, editingPrompt]);
   
   const handleAddTag = () => {
     if (tagInput.trim() !== "" && !tags.includes(tagInput.trim())) {

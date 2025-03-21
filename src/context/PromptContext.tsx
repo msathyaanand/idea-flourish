@@ -21,6 +21,8 @@ interface PromptContextType {
   deletePrompt: (id: string) => void;
   updatePrompt: (id: string, prompt: Partial<Omit<Prompt, "id" | "createdAt">>) => void;
   likePrompt: (id: string) => void;
+  unlikePrompt: (id: string) => void;
+  hasLiked: (id: string) => boolean;
   getPromptById: (id: string) => Prompt | undefined;
   filteredPrompts: Prompt[];
   searchTerm: string;
@@ -95,6 +97,16 @@ const initialPrompts: Prompt[] = [
   },
 ];
 
+// Generate a unique user ID for the current browser session
+function getUserId(): string {
+  let userId = localStorage.getItem("promptLibraryUserId");
+  if (!userId) {
+    userId = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("promptLibraryUserId", userId);
+  }
+  return userId;
+}
+
 export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [prompts, setPrompts] = useState<Prompt[]>(() => {
     const savedPrompts = localStorage.getItem("prompts");
@@ -105,10 +117,19 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [activeCreator, setActiveCreator] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [likedPrompts, setLikedPrompts] = useState<string[]>(() => {
+    const saved = localStorage.getItem("likedPrompts");
+    return saved ? JSON.parse(saved) : [];
+  });
 
+  // Save prompts and liked prompts to localStorage when they change
   useEffect(() => {
     localStorage.setItem("prompts", JSON.stringify(prompts));
   }, [prompts]);
+
+  useEffect(() => {
+    localStorage.setItem("likedPrompts", JSON.stringify(likedPrompts));
+  }, [likedPrompts]);
 
   const addPrompt = (promptData: Omit<Prompt, "id" | "createdAt" | "likes">) => {
     const newPrompt: Prompt = {
@@ -132,10 +153,36 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
   };
 
+  const hasLiked = (id: string) => {
+    return likedPrompts.includes(id);
+  };
+
   const likePrompt = (id: string) => {
+    // Check if already liked
+    if (hasLiked(id)) return;
+    
+    // Add to liked prompts
+    setLikedPrompts([...likedPrompts, id]);
+    
+    // Increment likes count
     setPrompts(
       prompts.map((prompt) =>
         prompt.id === id ? { ...prompt, likes: prompt.likes + 1 } : prompt
+      )
+    );
+  };
+
+  const unlikePrompt = (id: string) => {
+    // Check if liked
+    if (!hasLiked(id)) return;
+    
+    // Remove from liked prompts
+    setLikedPrompts(likedPrompts.filter(promptId => promptId !== id));
+    
+    // Decrement likes count
+    setPrompts(
+      prompts.map((prompt) =>
+        prompt.id === id ? { ...prompt, likes: Math.max(0, prompt.likes - 1) } : prompt
       )
     );
   };
@@ -184,6 +231,8 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     deletePrompt,
     updatePrompt,
     likePrompt,
+    unlikePrompt,
+    hasLiked,
     getPromptById,
     filteredPrompts,
     searchTerm,

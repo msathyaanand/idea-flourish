@@ -13,7 +13,7 @@ interface PromptCardProps {
 }
 
 export const PromptCard = ({ prompt, onView }: PromptCardProps) => {
-  const { likePrompt, setActiveTag } = usePromptContext();
+  const { likePrompt, unlikePrompt, hasLiked, setActiveTag } = usePromptContext();
   const [isLiking, setIsLiking] = useState(false);
   
   const handleLike = (e: React.MouseEvent) => {
@@ -22,7 +22,12 @@ export const PromptCard = ({ prompt, onView }: PromptCardProps) => {
     if (isLiking) return;
     
     setIsLiking(true);
-    likePrompt(prompt.id);
+    
+    if (hasLiked(prompt.id)) {
+      unlikePrompt(prompt.id);
+    } else {
+      likePrompt(prompt.id);
+    }
     
     // Add animation timeout
     setTimeout(() => {
@@ -87,7 +92,8 @@ export const PromptCard = ({ prompt, onView }: PromptCardProps) => {
             size={18}
             className={cn(
               "transition-all",
-              isLiking && "scale-125 fill-rose-500 text-rose-500",
+              hasLiked(prompt.id) && "fill-rose-500 text-rose-500",
+              isLiking && "scale-125",
               !isLiking && "group-hover:scale-110"
             )}
           />

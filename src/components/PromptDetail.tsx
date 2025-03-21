@@ -16,7 +16,7 @@ interface PromptDetailProps {
 }
 
 export const PromptDetail = ({ promptId, open, onOpenChange }: PromptDetailProps) => {
-  const { getPromptById, likePrompt, setActiveTag } = usePromptContext();
+  const { getPromptById, likePrompt, unlikePrompt, hasLiked, setActiveTag } = usePromptContext();
   const [copied, setCopied] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   
@@ -46,7 +46,12 @@ export const PromptDetail = ({ promptId, open, onOpenChange }: PromptDetailProps
     if (isLiking) return;
     
     setIsLiking(true);
-    likePrompt(prompt.id);
+    
+    if (hasLiked(prompt.id)) {
+      unlikePrompt(prompt.id);
+    } else {
+      likePrompt(prompt.id);
+    }
     
     setTimeout(() => {
       setIsLiking(false);
@@ -118,7 +123,8 @@ export const PromptDetail = ({ promptId, open, onOpenChange }: PromptDetailProps
                 size={18}
                 className={cn(
                   "transition-all",
-                  isLiking && "scale-125 fill-rose-500 text-rose-500"
+                  hasLiked(prompt.id) && "fill-rose-500 text-rose-500",
+                  isLiking && "scale-125"
                 )}
               />
               <span>{prompt.likes}</span>

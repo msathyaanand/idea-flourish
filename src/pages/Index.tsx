@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { PlusCircle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/SearchBar";
 import { PromptCard } from "@/components/PromptCard";
@@ -31,14 +32,27 @@ const PromptLibrary = () => {
             Discover, create, and share powerful prompts to enhance your AI interactions
           </p>
           
-          <Button 
-            onClick={() => setIsAddFormOpen(true)}
-            size="lg" 
-            className="rounded-full px-6 gap-2 shadow-md hover:shadow-lg transition-all"
-          >
-            <PlusCircle size={18} />
-            <span>Add New Prompt</span>
-          </Button>
+          <div className="flex justify-center gap-4">
+            <Button 
+              onClick={() => setIsAddFormOpen(true)}
+              size="lg" 
+              className="rounded-full px-6 gap-2 shadow-md hover:shadow-lg transition-all"
+            >
+              <PlusCircle size={18} />
+              <span>Add New Prompt</span>
+            </Button>
+            
+            <Link to="/admin">
+              <Button 
+                variant="outline"
+                size="lg" 
+                className="rounded-full px-6 gap-2 shadow-md hover:shadow-lg transition-all"
+              >
+                <Settings size={18} />
+                <span>Admin</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
       
