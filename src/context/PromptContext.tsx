@@ -24,6 +24,7 @@ interface PromptContextType {
   unlikePrompt: (id: string) => void;
   hasLiked: (id: string) => boolean;
   getPromptById: (id: string) => Prompt | undefined;
+  getRelatedPrompts: (id: string, limit?: number) => Prompt[];
   filteredPrompts: Prompt[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -198,6 +199,28 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return prompts.find((prompt) => prompt.id === id);
   };
 
+  // New function to get related prompts based on shared tags
+  const getRelatedPrompts = (id: string, limit = 3): Prompt[] => {
+    const currentPrompt = getPromptById(id);
+    if (!currentPrompt) return [];
+
+    // Find prompts that share tags with the current prompt
+    return prompts
+      .filter(p => 
+        p.id !== id && // Not the same prompt
+        p.tags.some(tag => currentPrompt.tags.includes(tag)) // Has at least one tag in common
+      )
+      .sort((a, b) => {
+        // Count how many tags match
+        const aMatchCount = a.tags.filter(tag => currentPrompt.tags.includes(tag)).length;
+        const bMatchCount = b.tags.filter(tag => currentPrompt.tags.includes(tag)).length;
+        
+        // Sort by number of matching tags (descending)
+        return bMatchCount - aMatchCount;
+      })
+      .slice(0, limit); // Limit to specified number
+  };
+
   // Compute filtered prompts based on search, tag, and creator filters
   const filteredPrompts = prompts.filter((prompt) => {
     const matchesSearch = searchTerm === "" || 
@@ -241,6 +264,7 @@ export const PromptProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     unlikePrompt,
     hasLiked,
     getPromptById,
+    getRelatedPrompts,
     filteredPrompts,
     searchTerm,
     setSearchTerm,
