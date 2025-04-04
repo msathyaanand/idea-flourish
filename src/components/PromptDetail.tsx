@@ -1,5 +1,4 @@
-
-import { Heart, Copy, CheckCheck, Calendar, User, Tag as TagIcon, Code, Pencil, DollarSign, Map, Utensils } from "lucide-react";
+import { Heart, Copy, CheckCheck, Calendar, User, Tag as TagIcon, Code, Pencil, DollarSign, Map, Utensils, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
